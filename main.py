@@ -10,9 +10,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-viz", "--vizualization", action='store_true', help="Візуалізувати граф")
     parser.add_argument("-stat", "--statistic", action='store_true', help="Вивести статистику графу")
-    parser.add_argument("--dfs", action='store_true', help="Обхід графа за допомогою пошуку в глибину")
-    parser.add_argument("--bfs", action='store_true', help="Обхід графа за допомогою пошуку в ширину")
-    parser.add_argument("-t", "--test", action='store_true', help="test")
+    parser.add_argument("--dfs", action='store_true', help="Відобразити дерево за допомогою обходу грава в глибину")
+    parser.add_argument("--bfs", action='store_true', help="Відобразити дерево за допомогою обходу грава в ширину")
+    parser.add_argument("-d", "--dijkstra", type=str, nargs='?', const='graphical.target', help="Відображає найкоротший шлях до вказаної ноди (за замовчуванням 'graphical.target')")
     if len(sys.argv)==1:
         parser.print_help(sys.stderr)
         sys.exit(1)
@@ -61,35 +61,16 @@ def visualize_graph(graph):
 
 def find_init_node(graph):
     '''Bootstrapping starts from the node pointed to by the minimum number of edges. This function returns this node.'''
+    
     # Фільтруємо вузли, щоб ігнорувати "init.scope"
     filtered_nodes = [(node, in_deg) for node, in_deg in graph.in_degree() if node != "init.scope"]
     
-    # Якщо всі вузли були відфільтровані, повертаємо None або інше значення за замовчуванням
+    # Якщо всі вузли були відфільтровані, повертаємо None
     if not filtered_nodes:
         return None
 
     root_node = min(filtered_nodes, key=lambda x: x[1])[0]
     return root_node
-
-# def dfs(graph):
-#     source = find_init_node(graph)
-#     dfs_tree = nx.dfs_tree(graph, source=source)
-#     return dfs_tree
-
-# def bfs(graph):
-#     source = find_init_node(graph)
-#     bfs_tree = nx.bfs_tree(graph, source=source)
-#     return bfs_tree
-
-# def graph_traversal(graph, algorithm):
-#     source = find_init_node(graph)
-#     if algorithm == "bfs":
-#         tree = nx.bfs_tree(graph, source=source)
-#     if algorithm == "dfs":
-#         tree = nx.dfs_tree(graph, source=source)
-#     else:
-#         tree = None
-#     return tree
 
 def build_anytree(graph, algorithm):
     source = find_init_node(graph)
@@ -119,11 +100,29 @@ def print_tree(tree_root):
     for pre, fill, node in RenderTree(tree_root):
         print("%s%s" % (pre, node.name))
 
+def add_weights_to_edges(graph, dependency_weights):
+# Функція для додавання ваг до ребер
+    weighted_graph = nx.DiGraph()
+
+    for u, v, data in graph.edges(data=True):
+        dependency_type = data.get('dependency', 'Requires')
+        weight = dependency_weights.get(dependency_type, 1)
+        weighted_graph.add_edge(u, v, weight=weight)
+        
+    return weighted_graph
+
 def main():
     
     # Зчитую граф з файлу DOT
     G = nx.drawing.nx_pydot.read_dot('dependency_graph.dot')
-
+    
+    DEPENDENCY_WEIGHTS = {
+    'Requires': 1,
+    'Wants': 3,
+    'Before': 10,
+    'After': 10,
+    'Conflicts': 1000,
+}
     args = parse_args()
     if args.vizualization:
         visualize_graph(G)
@@ -135,6 +134,12 @@ def main():
     if args.bfs:
         tree_root = build_anytree(G, algorithm='bfs')
         print_tree(tree_root)
+    if args.dijkstra:
+        weighted_G = add_weights_to_edges(G, DEPENDENCY_WEIGHTS)
+        source = find_init_node(weighted_G)
+        target_node = args.dijkstra
+        shortest_paths = nx.single_source_dijkstra_path(weighted_G, source=source, weight='weight')
+        print(shortest_paths[target_node])
 
 if __name__ == "__main__":
     main()
