@@ -10,8 +10,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("-viz", "--vizualization", action='store_true', help="Візуалізувати граф")
     parser.add_argument("-stat", "--statistic", action='store_true', help="Вивести статистику графу")
-    parser.add_argument("--dfs", action='store_true', help="Відобразити дерево за допомогою обходу грава в глибину")
-    parser.add_argument("--bfs", action='store_true', help="Відобразити дерево за допомогою обходу грава в ширину")
+    parser.add_argument("--dfs", action='store_true', help="Відобразити дерево за допомогою обходу графа в глибину")
+    parser.add_argument("--bfs", action='store_true', help="Відобразити дерево за допомогою обходу графа в ширину")
     parser.add_argument("-d", "--dijkstra", type=str, nargs='?', const='graphical.target', help="Відображає найкоротший шлях до вказаної ноди (за замовчуванням 'graphical.target')")
     if len(sys.argv)==1:
         parser.print_help(sys.stderr)
@@ -115,7 +115,7 @@ def main():
     
     # Зчитую граф з файлу DOT
     G = nx.drawing.nx_pydot.read_dot('dependency_graph.dot')
-    
+
     DEPENDENCY_WEIGHTS = {
     'Requires': 1,
     'Wants': 3,
