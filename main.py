@@ -1,8 +1,8 @@
+import re
 import argparse
 import sys
 import networkx as nx
 import matplotlib.pyplot as plt
-import re
 from anytree import Node, RenderTree
 from algorithms import dfs_recursive, bfs_recursive, dijkstra
 
