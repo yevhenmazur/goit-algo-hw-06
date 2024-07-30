@@ -49,5 +49,5 @@ DEPENDENCY_WEIGHTS = {
 `python ./main.py -d` або `python ./main.py --dijkstra`
 Також ви можете передати назву вузла, шлях до якого шукаєте
 ```
-python ./main.py -d="initrd.target"
+python ./main.py -d="initrd-switch-root.target"
 ```
